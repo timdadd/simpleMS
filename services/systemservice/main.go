@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -30,15 +31,10 @@ const (
 	version     string = "1.0.0"
 )
 
-//type frontendServer struct {
-//	systemSvcAddr string
-//	systemSvcConn *grpc.ClientConn
-//}
-
 func main() {
 	// Command line stuff
 	showversion := flag.Bool("version", false, "display version")
-	port := flag.String("port", defaultPort, "port to bind")
+	srvPort := flag.String("port", defaultPort, "port to bind")
 	flag.Parse()
 
 	if *showversion {
@@ -50,7 +46,10 @@ func main() {
 		fmt.Fprintf(w, "%s\n", version)
 	})
 
-	srvPort := port
+	addr := GetLocalIP()
+	mustMapEnv(&addr, "LISTEN_ADDR")
+	log.Printf("http://%s:%s", addr, *srvPort)
+
 	if os.Getenv("PORT") != "" {
 		*srvPort = os.Getenv("PORT")
 	}
@@ -76,9 +75,13 @@ func systemService(port string) {
 func mustMapEnv(target *string, envKey string) {
 	v := os.Getenv(envKey)
 	if v == "" {
+		v = *target
+	}
+	if v == "" {
 		panic(fmt.Sprintf("environment variable %q not set", envKey))
 	}
 	*target = v
+	log.Printf("%q=%q", envKey, v)
 }
 
 type assigner struct {
@@ -118,4 +121,21 @@ func newInstance() *Instance {
 		i.Error = a.err.Error()
 	}
 	return i
+}
+
+// GetLocalIP returns the non loopback local IP of the host
+func GetLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback the display it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
 }

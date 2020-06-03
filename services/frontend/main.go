@@ -1,17 +1,16 @@
 package main
 
 import (
-	"cloud.google.com/go/compute/metadata"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"simpleMS/services/frontend/templates"
 )
 
 type Instance struct {
@@ -33,10 +32,10 @@ const (
 	version     string = "2.0.0"
 )
 
-type frontendServer struct {
-	systemSvcAddr string
-	systemSvcConn *grpc.ClientConn
-}
+//type frontendServer struct {
+//	systemSvcAddr string
+//	systemSvcConn *grpc.ClientConn
+//}
 
 func main() {
 
@@ -57,7 +56,7 @@ func main() {
 	})
 
 	if os.Getenv("PORT") != "" {
-		mustMapEnv(srvPort,"PORT")
+		mustMapEnv(srvPort, "PORT")
 	}
 	//host,err := os.Hostname()
 	//if err != nil {
@@ -69,7 +68,7 @@ func main() {
 	//}
 	addr := GetLocalIP()
 	mustMapEnv(&addr, "LISTEN_ADDR")
-	log.Printf("http://%s:%s",addr,*srvPort)
+	log.Printf("http://%s:%s", addr, *srvPort)
 	//svc := new(frontendServer)
 
 	// Now connect to the backend stuff
@@ -81,7 +80,7 @@ func main() {
 
 func frontendMode(port string, backendURL string) {
 	log.Printf("Starting frontend on port %s", port)
-	tpl := template.Must(template.New("out").Parse(html))
+	tpl := template.Must(template.New("out").Parse(templates.Html))
 
 	transport := http.Transport{DisableKeepAlives: false}
 	client := &http.Client{Transport: &transport}
@@ -128,44 +127,6 @@ func frontendMode(port string, backendURL string) {
 		w.WriteHeader(http.StatusOK)
 	})
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
-}
-
-type assigner struct {
-	err error
-}
-
-func (a *assigner) assign(getVal func() (string, error)) string {
-	if a.err != nil {
-		return ""
-	}
-	s, err := getVal()
-	if err != nil {
-		a.err = err
-	}
-	return s
-}
-
-func newInstance() *Instance {
-	var i = new(Instance)
-	if !metadata.OnGCE() {
-		i.Error = "Not running on GCE"
-		return i
-	}
-
-	a := &assigner{}
-	i.Id = a.assign(metadata.InstanceID)
-	i.Zone = a.assign(metadata.Zone)
-	i.Name = a.assign(metadata.InstanceName)
-	i.Hostname = a.assign(metadata.Hostname)
-	i.Project = a.assign(metadata.ProjectID)
-	i.InternalIP = a.assign(metadata.InternalIP)
-	i.ExternalIP = a.assign(metadata.ExternalIP)
-	i.Version = version
-
-	if a.err != nil {
-		i.Error = a.err.Error()
-	}
-	return i
 }
 
 func mustMapEnv(target *string, envKey string) {

@@ -1,4 +1,4 @@
-module simpleMS/services/systemService
+module simpleMS/services/systemservice
 
 go 1.14
 

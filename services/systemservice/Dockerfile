@@ -8,7 +8,7 @@ WORKDIR /go/src/$PROJECT
 
 # restore dependencies
 #go mod tidy
-#COPY . .
+COPY . .
 RUN go build -o /systemservice .
 
 FROM alpine AS release
