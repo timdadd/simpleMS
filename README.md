@@ -1,12 +1,8 @@
-#Simple (docker/kubernetes) (local/GKE) deployable microservice demo
+# Simple (docker/kubernetes) (local/GKE) deployable microservice demo
 
 This is based upon various google tutorials / examples
 
-## Service Architecture
-
-Composed of two microservices, frontend and systemservice that talk to each other over http.
-
-[![Architecture of the two microservices]
+## Architecture of the two microservices
 
 | Service                                              | Description                                     |                                                                                  |
 | ---------------------------------------------------- | ------------- | --------------------------------|
