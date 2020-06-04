@@ -3,12 +3,13 @@ FROM golang:alpine AS builder
 #      wget -qO/go/bin/dep https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 && \
 #      chmod +x /go/bin/dep
 
-ENV PROJECT simpleMS/services/systemservice
+ENV PROJECT simplems/services/systemservice
 WORKDIR /go/src/$PROJECT
 
 # restore dependencies
 #go mod tidy
 COPY . .
+RUN ls -la /
 RUN go build -o /systemservice .
 
 FROM alpine AS release
@@ -21,4 +22,3 @@ COPY --from=builder /systemservice ./server
 #COPY products.json .
 EXPOSE 3550
 ENTRYPOINT ["/systemservice/server"]
-

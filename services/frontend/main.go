@@ -6,26 +6,11 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"lib/utils"
 	"log"
-	"net"
 	"net/http"
 	"os"
-	"simpleMS/services/frontend/templates"
 )
-
-type Instance struct {
-	Id         string
-	Name       string
-	Version    string
-	Hostname   string
-	Zone       string
-	Project    string
-	InternalIP string
-	ExternalIP string
-	LBRequest  string
-	ClientIP   string
-	Error      string
-}
 
 const (
 	defaultPort        = "8080"
@@ -56,7 +41,7 @@ func main() {
 	})
 
 	if os.Getenv("PORT") != "" {
-		mustMapEnv(srvPort, "PORT")
+		utils.MustMapEnv(srvPort, "PORT")
 	}
 	//host,err := os.Hostname()
 	//if err != nil {
@@ -66,13 +51,13 @@ func main() {
 	//if err != nil {
 	//	panic(fmt.Sprintf("No IP addresses for host name %s: %v\n", host, err))
 	//}
-	addr := GetLocalIP()
-	mustMapEnv(&addr, "LISTEN_ADDR")
+	addr := utils.GetLocalIP()
+	utils.MustMapEnv(&addr, "LISTEN_ADDR")
 	log.Printf("http://%s:%s", addr, *srvPort)
 	//svc := new(frontendServer)
 
 	// Now connect to the backend stuff
-	mustMapEnv(systemService, "SYSTEM_SERVICE_ADDR")
+	utils.MustMapEnv(systemService, "SYSTEM_SERVICE_ADDR")
 	//mustConnGRPC(ctx, &svc.systemSvcConn, svc.systemSvcAddr)
 
 	frontendMode(*srvPort, *systemService)
@@ -80,7 +65,8 @@ func main() {
 
 func frontendMode(port string, backendURL string) {
 	log.Printf("Starting frontend on port %s", port)
-	tpl := template.Must(template.New("out").Parse(templates.Html))
+	// This path works at the command line, but in GoLand it starts at route
+	tpl := template.Must(template.ParseFiles("./templates/serverStatus.html"))
 
 	transport := http.Transport{DisableKeepAlives: false}
 	client := &http.Client{Transport: &transport}
@@ -92,7 +78,7 @@ func frontendMode(port string, backendURL string) {
 	req.Close = false
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		i := &Instance{}
+		i := &utils.ServerInstance{}
 		resp, err := client.Do(req)
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
@@ -127,33 +113,4 @@ func frontendMode(port string, backendURL string) {
 		w.WriteHeader(http.StatusOK)
 	})
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
-}
-
-func mustMapEnv(target *string, envKey string) {
-	v := os.Getenv(envKey)
-	if v == "" {
-		v = *target
-	}
-	if v == "" {
-		panic(fmt.Sprintf("environment variable %q not set", envKey))
-	}
-	*target = v
-	log.Printf("%q=%q", envKey, v)
-}
-
-// GetLocalIP returns the non loopback local IP of the host
-func GetLocalIP() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return ""
-	}
-	for _, address := range addrs {
-		// check the address type and if it is not a loopback the display it
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
-			}
-		}
-	}
-	return ""
 }

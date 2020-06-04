@@ -1,6 +1,6 @@
 # Remove JetBrains GoLAND noise
 .idea/
 /.../.idea/
-## Remove local builds stuff
+## Remove locally built services
 /services/systemservice/systemservice
 /services/frontend/frontend

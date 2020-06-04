@@ -21,13 +21,11 @@ This is based upon various google tutorials / examples
   is deployed to Kubernetes with a single command using Skaffold.
 
 ## Installation on Ubuntu 20 with GoLang 14
-
 * Install GoLang
 * Install Docker - make sure you can run docker without root privileges by adding your user name to docker groups.
 * git clone the repository somewhere on your PC
 
 ### Running locally
-
 > 💡 Recommended if you're planning to develop the application or giving it a try on your local cluster.
 
 ### Install tools to run a Kubernetes cluster locally:
@@ -127,7 +125,7 @@ The browser should open automatically.  The main page shows the system details, 
 microservice.
 
 ### Quick clean up of the services/deployments and pods
-Go to the ./services directory so that you have a list of all the services.  If you clean up the deployments then you have
+Go to the ./src directory so that you have a list of all the services.  If you clean up the deployments then you have
 to rebuild everything.  The pods are deleted with the deployment but the services stay.
 ```bash
 kubectl delete deployment *

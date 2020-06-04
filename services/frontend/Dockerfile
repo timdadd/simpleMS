@@ -3,10 +3,11 @@ FROM golang:alpine AS builder
 #      wget -qO/go/bin/dep https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 && \
 #      chmod +x /go/bin/dep
 
-ENV PROJECT simpleMS/services/frontend
+ENV PROJECT simplems/src/frontend
 WORKDIR /go/src/$PROJECT
 
 COPY . .
+RUN ls -la /
 RUN go install .
 
 FROM alpine as release

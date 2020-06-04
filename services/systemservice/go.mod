@@ -1,5 +1,7 @@
-module simpleMS/services/systemservice
+module systemservice
 
 go 1.14
 
-require cloud.google.com/go v0.57.0
+replace lib/utils v0.0.0 => ./lib/utils
+
+require lib/utils v0.0.0
