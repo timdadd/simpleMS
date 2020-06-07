@@ -1,48 +1,46 @@
 package main
 
 import (
+	//"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	//"google.golang.org/grpc"
 	"html/template"
 	"io/ioutil"
-	"lib/utils"
+	"lib/common"
 	"log"
 	"net/http"
-	"os"
+	//"time"
 )
 
 const (
-	defaultPort        = "8080"
-	version     string = "2.0.0"
+	version string = "1.0.1"
 )
 
-//type frontendServer struct {
-//	systemSvcAddr string
-//	systemSvcConn *grpc.ClientConn
-//}
-
 func main() {
-
+	//ctx := context.Background()
 	// Command line stuff
 	showversion := flag.Bool("version", false, "display version")
-	//frontend := flag.Bool("frontend", false, "run in frontend mode")
-	srvPort := flag.String("port", defaultPort, "port to bind")
-	systemService := flag.String("system-service", "http://127.0.0.1:8081", "hostname of backend server")
 	flag.Parse()
-
 	if *showversion {
 		fmt.Printf("Version %s\n", version)
 		return
 	}
 
+	// Service details
+	var c, err = common.LoadConfig("frontend.yaml", "")
+	if err != nil {
+		fmt.Printf("Cannot load the configuration: %s", err)
+	}
+
+	// Now we've parsed all the connection paramaters we can connect to the services
+	//mustConnGRPC(ctx, &servers["route-guide"].Conn, *servers["route-guide"].ServiceParams[common.ServiceAddress])
+
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s\n", version)
 	})
 
-	if os.Getenv("PORT") != "" {
-		utils.MustMapEnv(srvPort, "PORT")
-	}
 	//host,err := os.Hostname()
 	//if err != nil {
 	//	panic(fmt.Sprintf("No host name: %v\n", err))
@@ -51,34 +49,27 @@ func main() {
 	//if err != nil {
 	//	panic(fmt.Sprintf("No IP addresses for host name %s: %v\n", host, err))
 	//}
-	addr := utils.GetLocalIP()
-	utils.MustMapEnv(&addr, "LISTEN_ADDR")
-	log.Printf("http://%s:%s", addr, *srvPort)
-	//svc := new(frontendServer)
 
 	// Now connect to the backend stuff
-	utils.MustMapEnv(systemService, "SYSTEM_SERVICE_ADDR")
-	//mustConnGRPC(ctx, &svc.systemSvcConn, svc.systemSvcAddr)
+	//common.MustMapEnv(&servers.routeGuideSvcAddr, "ROUTE_GUIDE_SERVICE_ADDR")
+	//mustConnGRPC(ctx, &servers.systemSvcConn, servers.systemSvcAddr)
 
-	frontendMode(*srvPort, *systemService)
-}
+	c.KeyPrefix("system")
+	log.Printf("System Service URL:%s", c.GetStringKey(c.Key.ServiceAddress))
 
-func frontendMode(port string, backendURL string) {
-	log.Printf("Starting frontend on port %s", port)
 	// This path works at the command line, but in GoLand it starts at route
 	tpl := template.Must(template.ParseFiles("./templates/serverStatus.html"))
-
 	transport := http.Transport{DisableKeepAlives: false}
 	client := &http.Client{Transport: &transport}
 	req, _ := http.NewRequest(
 		"GET",
-		backendURL,
+		c.GetStringKey(c.Key.ServiceAddress),
 		nil,
 	)
 	req.Close = false
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		i := &utils.ServerInstance{}
+		i := &common.ServerInstance{}
 		resp, err := client.Do(req)
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
@@ -112,5 +103,19 @@ func frontendMode(port string, backendURL string) {
 		ioutil.ReadAll(resp.Body)
 		w.WriteHeader(http.StatusOK)
 	})
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
+
+	c.KeyPrefix("frontend")
+	c.Log.Printf("Listening on http://%s:%v", common.GetLocalIP(), c.GetIntKey(c.Key.Port))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", c.GetIntKey(c.Key.Port)), nil))
 }
+
+//func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
+//	var err error
+//	*conn, err = grpc.DialContext(ctx, addr,
+//		grpc.WithInsecure(),
+//		grpc.WithTimeout(time.Second*3),
+//		grpc.WithStatsHandler(&ocgrpc.ClientHandler{}))
+//	if err != nil {
+//		panic(fmt.Errorf("grpc: failed to connect %s : %w", addr,err))
+//	}
+//}

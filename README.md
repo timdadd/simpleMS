@@ -4,10 +4,12 @@ This is based upon various google tutorials / examples
 
 ## Architecture of the two microservices
 
-| Service                                              | Description                                     |                                                                                  |
-| ---------------------------------------------------- | ------------- | --------------------------------|
-| [frontend](./services/frontend)                      | Exposes an HTTP server to serve the website.    |
-| [systemservice](./services/systemservice)            | Just provides system info to the front end.     |
+| Service                                              | Port | Description                                    |
+| ---------------------------------------------------- | ----- | ----------------------------------------------|
+| [frontend](./services/frontend)                      | 8080  | Exposes an HTTP server to serve the website.  |
+| [systemservice](./services/systemservice)            | 8081  | Just provides system info to the front end.   |
+| [routeguideservice](./services/routeguideservice)    | 8082  | [grpc tutorial](https://www.grpc.io/docs/languages/go/basics/) |
+
 
 ## Features
 

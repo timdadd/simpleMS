@@ -10,6 +10,7 @@ build:
     context: services/systemservice
   - image: frontend
     context: services/frontend
+#  local: {}
 #  tagPolicy:
 #    gitCommit: {}
 deploy:

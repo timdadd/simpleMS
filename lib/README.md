@@ -1,6 +1,6 @@
 # lib stuff
 This is where I put all the common stuff!!! Now GO really doesn't support common stuff across projects
-being available on your PC they happily work with common stuff when it's on git hub.  But during evolution I want
+being available on your PC but happily work with common stuff when it's on git hub.  But during evolution I want
 to be able to work locally so that I can evolve things.
 
 For microservices this is a real no-no.  Nothing should be associated with other stuff it should all be
@@ -23,3 +23,5 @@ a GoLang project with its own `mod.go` file.  There is no mod.go on the root, th
 feels right because I could develop a microservice in another technology and the overall project framework
 should hold together.  The cost of multiple technologies is in the build/deploy/test infrastructure, that is I'm
 writing stuff with a GoLang focus!!!
+
+For build the command 'go mod vendor" loads all the externally needed stuff into the vendor directory for building

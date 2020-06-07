@@ -1,0 +1,9 @@
+system:
+  service_addr: http://127.0.0.1:8082
+  port: 8082
+route-guide:
+  service_addr: http://127.0.0.1:8084
+  server_host_override: x.test.youtube.com
+frontend:
+  listen_addr:
+  port: 8080

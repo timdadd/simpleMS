@@ -4,3 +4,10 @@
 ## Remove locally built services
 /services/systemservice/systemservice
 /services/frontend/frontend
+
+## Ignore the vendor directory within each module
+vendor/
+
+## Ignore anything put in an archive directory
+archive/
+

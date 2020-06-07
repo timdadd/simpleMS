@@ -19,6 +19,8 @@ FROM alpine AS release
 #    chmod +x /bin/grpc_health_probe
 WORKDIR /systemservice
 COPY --from=builder /systemservice ./server
+#copy defaultConfig.yaml .
+COPY ./dockerConfig.yaml ./frontend.yaml
 #COPY products.json .
 EXPOSE 3550
 ENTRYPOINT ["/systemservice/server"]
