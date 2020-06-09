@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	version string = "1.0.0"
+	serviceName string = "systemservice" // Make sure same cfg name in Dockerfile
+	version     string = "1.0.0"
 )
 
 func main() {
@@ -25,8 +26,8 @@ func main() {
 		return
 	}
 
-	// Service details
-	c, err := common.LoadConfig("frontend.yaml", "")
+	// Service details - check this name is same im Dockerfile
+	c, err := common.LoadConfig(serviceName, "")
 	if err != nil {
 		fmt.Printf("Cannot load the configuration: %s", err)
 	}
@@ -39,9 +40,9 @@ func main() {
 	})
 
 	c.KeyPrefix("system")
-	c.Log.Debug("http://", common.GetLocalIP(), ":", c.GetIntKey(c.Key.Port))
+	c.Log.Debug("http://", common.GetLocalIP(), ":", c.Port())
 
-	c.Log.Debug("Starting system service on port ", c.GetIntKey(c.Key.Port))
+	c.Log.Debug("Starting system service on port ", c.Port())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		i := common.NewServerInstance(version)
 		raw, _ := httputil.DumpRequest(r, true)
@@ -52,5 +53,5 @@ func main() {
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", c.GetIntKey(c.Key.Port)), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", c.Port()), nil))
 }

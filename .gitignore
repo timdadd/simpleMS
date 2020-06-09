@@ -4,6 +4,8 @@
 ## Remove locally built services
 /services/systemservice/systemservice
 /services/frontend/frontend
+/services/routeguideservice/routeguideservice
+/services/routeguideservice/client/client
 
 ## Ignore the vendor directory within each module
 vendor/

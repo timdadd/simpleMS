@@ -4,21 +4,21 @@ This is based upon various google tutorials / examples
 
 ## Architecture of the two microservices
 
-| Service                                              | Port | Description                                    |
-| ---------------------------------------------------- | ----- | ----------------------------------------------|
-| [frontend](./services/frontend)                      | 8080  | Exposes an HTTP server to serve the website.  |
-| [systemservice](./services/systemservice)            | 8081  | Just provides system info to the front end.   |
-| [routeguideservice](./services/routeguideservice)    | 8082  | [grpc tutorial](https://www.grpc.io/docs/languages/go/basics/) |
+| Service                                               | Port | Description                                    |
+| ----------------------------------------------| ----- | ----------------------------------------------|
+| [frontend](./services/frontend)               | 8080  | Exposes an HTTP server to serve the website.  |
+| [systemservice](./services/systemservice)     | 8082  | Just provides system info to the front end.   |
+| [routeguideservice](./services/routeguide)    | 10000 | [grpc tutorial](https://www.grpc.io/docs/languages/go/basics/) |
 
 
 ## Features
 
 - **[Kubernetes](https://kubernetes.io)/[GKE](https://cloud.google.com/kubernetes-engine/):**
-  The services run in the following modes:
-   - GO RUN, one terminal window per microservice
-   - DOCKER, build docker containers and then connect together in a network
-   - Kubernets using minikube
-   - Kuberneters on the cloud with GKE
+  The services run in the following deployment modes:
+   - GO RUN, locally, one process per microservice
+   - DOCKER, use local docker to build images and deploy containers, all connected in docker network with port exposure for access
+   - Kubernetes using minikube
+   - Kubernetes on the cloud with GKE
 - **[Skaffold](https://skaffold.dev):** Application
   is deployed to Kubernetes with a single command using Skaffold.
 
@@ -26,9 +26,6 @@ This is based upon various google tutorials / examples
 * Install GoLang
 * Install Docker - make sure you can run docker without root privileges by adding your user name to docker groups.
 * git clone the repository somewhere on your PC
-
-### Running locally
-> 💡 Recommended if you're planning to develop the application or giving it a try on your local cluster.
 
 ### Install tools to run a Kubernetes cluster locally:
 * kubectl
@@ -60,6 +57,21 @@ Now set the default driver to docker
 ```bash
 minikube config set driver docker
 ```
+
+## Deploying
+Below are manual steps that should still work but now there is a `deploy.sh` script that should do everything for you:
+
+The order of the command line instructions shouldn't matter, `deploy.sh --help` for latest instructions
+
+* Run without docker/minikube: `./deploy.sh local`
+* Stop running the local version: `.deploy.sh local stop`
+* Run on local docker installation, no minikube/KBE: `./deploy.sh docker`
+* Stop running the docker installation: `./deploy.sh docker stop`
+* Clean up the docker installation: `./deploy.sh docker clean`
+* Run on minikube GKE Cluster: `./deploy.sh`
+* Stop minikube GKE Cluster: `./deploy.sh stop`
+
+## Manually steps for minikube
 ### Launch the minikube Kubernetes cluster
 Start **Minikube** with a Kubernetes cluster, here we configure with at least:
  - 4 CPU's

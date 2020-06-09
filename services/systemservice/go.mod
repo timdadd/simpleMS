@@ -2,9 +2,6 @@ module systemservice
 
 go 1.14
 
-replace lib/common v0.0.0 => ./lib/common
+replace lib v0.0.0 => ./lib
 
-require (
-	github.com/stretchr/testify v1.4.0
-	lib/common v0.0.0
-)
+require lib v0.0.0

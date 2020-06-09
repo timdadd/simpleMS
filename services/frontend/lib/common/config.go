@@ -12,34 +12,22 @@ import (
 	"time"
 )
 
-// ServiceConfig is global object that holds all application level variables.
-var ServiceConfig appConfig
-
-// Enumerated keys related to the configuration
-type key struct {
-	ServiceVersion string // The service version
-	ServiceAddress string // The server address in the format of host:port
-	TLS            string // Connection uses TLS if true, else plain TCP
-	CAFile         string // The file containing the CA root cert file
-	HostOverride   string // The server name used to verify the hostname returned by the TLS handshake
-	ListenAddress  string // The address to listen on
-	Port           string // The port to listen on
-}
+// AppConfig is global object that holds all application level variables.
+var AppConfig appConfig
 
 type appConfig struct {
-	//	Viper
+	//	Viper parameters (env or file)
 	V *viper.Viper
 	// Logging Details
 	Log *logrus.Logger
 
 	keyPrefix string // Prefix for key
-	Key       key
 }
 
-// LoadConfig loads ServiceConfig from files, command line, environment etc.
-func LoadConfig(configName string, defaults string, configPaths ...string) (appConfig, error) {
+// LoadConfig loads AppConfig from files, command line, environment etc.
+func LoadConfig(serviceName string, defaults string, configPaths ...string) (appConfig, error) {
 	log := logrus.New()
-	ServiceConfig.Log = log
+	AppConfig.Log = log
 	log.Level = logrus.DebugLevel
 	log.Formatter = &logrus.TextFormatter{TimestampFormat: time.RFC822}
 	//log.Formatter = &logrus.JSONFormatter{
@@ -54,30 +42,18 @@ func LoadConfig(configName string, defaults string, configPaths ...string) (appC
 
 	log.Debug("Loading the configuration")
 
-	// Values of keys in the ServiceConfig
-	ServiceConfig.Key = key{
-		ServiceVersion: "service_version",      // The service version
-		ServiceAddress: "service_addr",         // The server address in the format of host:port
-		TLS:            "tls",                  // Connection uses TLS if true, else plain TCP
-		CAFile:         "ca_file",              // The file containing the CA root cert file
-		HostOverride:   "server_host_override", // The server name used to verify the hostname returned by the TLS handshake
-		ListenAddress:  "listen_addr",          // The address to listen on
-		Port:           "port",                 // The address to listen on
-	}
-
 	// Use viper library to load the configuration
 	v := viper.New()
-	ServiceConfig.V = v
-	v.SetConfigName(configName)
+	AppConfig.V = v
 	v.SetConfigType("yaml")
 	v.AutomaticEnv() // Automatically read environment variables
 
 	log.Debug("Loading the defaults")
-	v.AddConfigPath(".")
+	v.AddConfigPath("./cfg") // Default directory for config files
 	v.SetConfigName("defaultConfig.yaml")
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Debug("No default ServiceConfig file found")
+			log.Debug("No default AppConfig file found")
 		} else {
 			log.Debug("Error loading defaultConfig.yaml: ", err)
 		}
@@ -92,19 +68,20 @@ func LoadConfig(configName string, defaults string, configPaths ...string) (appC
 		v.AddConfigPath(path)
 	}
 
-	log.Debug("Loading the ServiceConfig file:", configName)
+	configName := serviceName + ".yaml"
+	log.Debug("Loading the AppConfig file:", configName)
 	v.SetConfigName(configName)
 	if err := v.MergeInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Debug("No ServiceConfig file found")
+			log.Debug("No AppConfig file found")
 		} else {
-			return ServiceConfig, fmt.Errorf("failed to read the configuration file: %s:%w", configName, err)
+			return AppConfig, fmt.Errorf("failed to read the configuration file: %s:%w", configName, err)
 		}
 	}
 
 	log.Debug(v.AllSettings())
 
-	return ServiceConfig, nil
+	return AppConfig, nil
 }
 
 // Environment variables take priority
@@ -129,4 +106,51 @@ func (c *appConfig) GetStringKey(key string) string {
 func (c *appConfig) GetIntKey(key string) int {
 	i, _ := strconv.Atoi(c.GetStringKey(key))
 	return i
+}
+
+// Environment variables take priority
+func (c *appConfig) GetBoolKey(key string) bool {
+	b, _ := strconv.ParseBool(c.GetStringKey(key))
+	return b
+
+}
+
+// The port to listen on
+func (c *appConfig) Port() int {
+	return c.GetIntKey("port")
+}
+
+// The service version
+func (c *appConfig) ServiceVersion() string {
+	return c.GetStringKey("service_version")
+}
+
+// The server address in the format of host:port
+func (c *appConfig) ServiceAddress() string {
+	return c.GetStringKey("service_addr")
+}
+
+// Connection uses TLS if true, else plain TCP
+func (c *appConfig) TLS() bool {
+	return c.GetBoolKey("tls")
+}
+
+// The file containing the CA root cert file
+func (c *appConfig) CertFile() string {
+	return c.GetStringKey("ca_file")
+}
+
+// The server name used to verify the hostname returned by the TLS handshake
+func (c *appConfig) HostOverride() string {
+	return c.GetStringKey("server_host_override")
+}
+
+// The TLS key file
+func (c *appConfig) KeyFile() string {
+	return c.GetStringKey("key_file")
+}
+
+// The address to listen on?
+func (c *appConfig) ListenAddress() string {
+	return c.GetStringKey("listen_addr")
 }

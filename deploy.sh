@@ -3,130 +3,134 @@
 
 # check https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html#The-Set-Builtin for options
 # Exit immediately if error, unset varible usage is an error, if a pipe command fails then use output of previous
+set -o nounset
 set -o errexit
-#set -o unset
 set -o pipefail
 
-BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-LIME_YELLOW=$(tput setaf 190)
 YELLOW=$(tput setaf 3)
-POWDER_BLUE=$(tput setaf 153)
-BLUE=$(tput setaf 4)
-MAGENTA=$(tput setaf 5)
 CYAN=$(tput setaf 6)
-ORANGE=$(tput setaf 10)
-WHITE=$(tput setaf 7)
-BRIGHT=$(tput bold)
-NORMAL=$(tput sgr0)
-BLINK=$(tput blink)
-REVERSE=$(tput smso)
-UNDERLINE=$(tput smul)
 
-show_help () {
-    echo "Usage: $0 {local|docker|minikube|gke} [option...] {start|stop|dev|test|clean} [service names ...]" >&2
-    echo "   local ..... without docker, kubernetes etc."
-    echo "   docker .... local docker only (using docker.yaml?)"
-    echo "   minikube .. minikube using skaffold - this is the default"
-    echo "   gke ....... Google Kubernetes Engine"
-    echo
-    echo "   -h, --help"
-    echo "   -v, --verbose"
-    echo "   -o, --output filename"
-    echo "   -s, --silent if you don't want any output to terminal"
-    echo
-    echo "   Guess what start, stop and restart means"
-    echo
-    echo " Roll your own ommand examples:"
-    echo "   $0 local start -o tim.txt"
-    echo "   $0 start local -o tim.txt"
-    echo "   $0 -o tim.txt gke restart"
-}
-
-projd=$PWD
+projd=$PWD # make a note of the project directory
 if [ ! -d $projd/services ];then
   echo "${RED}Why is there no ${YELLOW}services${RED} directory?"
   echo "${CYAN}This script should be run from project root${WHITE}"
   exit 1
 fi
+
+source lib/scripts/common.sh
+
+show_help () {
+    echo "Usage: $0 {local|docker|minikube|gke} [option...] {start|stop|dev|test|build|clean} [service names ...]" >&2
+    echo "   local ..... without docker, kubernetes etc."
+    echo "   docker .... local docker only (using Dockerfile)"
+    echo "   minikube .. minikube using skaffold - this is the default"
+    echo "   gke ....... Google Kubernetes Engine"
+    echo
+    echo "   -h, --help"
+    echo "   -v, --verbose"
+    echo "   -s, --silent if you want less output to terminal"
+    echo
+    echo "   Guess what start, stop and restart means"
+    echo
+    echo " Roll your own command order:"
+    echo "   $0 local start -o tim.txt"
+    echo "   $0 start local -o tim.txt"
+    echo "   $0 -o tim.txt gke restart"
+    echo
+    echo "You can only specify service names for local & docker deployment"
+}
+
 SERVICES=($(ls $projd/services))
 
 # Parse the command line
-# Initialize our own variables and make a note of the project directory:
-output_file=""
+# Initialize our own variables
 verbose=0
 silent=0
+terminate=0
 deploy_to="minikube"
 deploy_mode="start"
 services=()
+IFS=,
+svc_csv=${SERVICES[*]}
+IFS=
 while :
 do
     if [ $# = 0 ]; then break ; fi
-#    if [[ " ${SERVICES[@]} " =~ " $1 " ]]; then
-#      services+=($1)
-#    fi
-
     case "$1" in
-      -o | --output)
-          if [ $# -ne 0 ]; then
-            output_file="$2"   # Should we check if $2 is valid - maybe later
-          fi
-          shift 2
-          ;;
+#      -o | --output)
+#          if [ $# -ne 0 ]; then
+#            output_file="$2"   # Should we check if $2 is valid - maybe later
+#          fi
+#          shift 2
+#          ;;
       -h | --help)
-          show_help
-          exit 0
-          ;;
+        show_help
+        exit 0
+        ;;
       -v | --verbose)
-          verbose=1
-          shift 1
-           ;;
+        verbose=1
+        shift 1
+        ;;
       -s | --silent)
-          silent=1
-          shift 1
-           ;;
-
+        silent=1
+        shift 1
+        ;;
       local | docker | minikube | gke)
-          deploy_to="$1"
-          shift 1
-           ;;
-
-      start | stop | dev | test)
-          deploy_mode="$1"
-          shift 1
-           ;;
-
+        deploy_to="$1"
+        shift 1
+        ;;
+      clean | stop)
+        deploy_mode="$1"
+        terminate=1
+        shift 1
+        ;;
+      start | dev | build | test)
+        deploy_mode="$1"
+        shift 1
+        ;;
       --) # End of all options
-          shift
-          break
-          ;;
+        shift
+        break
+        ;;
       -*)
-          echo "${RED}Error: Unknown option: $YELLOW$1$CYAN" >&2
+        echo "${RED}Error: Unknown option: $YELLOW$1$CYAN" >&2
+        show_help
+        echo $WHITE
+        exit 1
+        ;;
+      *)  # Could this be a service name?
+        svc_exists=($(echo $svc_csv | grep -ic ",$1," || true))
+        if [ "$svc_exists" == "1" ] ; then
+          services+=("$1")
+          shift 1
+        else
+          echo "${RED}Error: Unknown value: $YELLOW$1$CYAN"
+          echo "Service names: ${POWDER_BLUE}$svc_csv${WHITE}"
           show_help
           echo $WHITE
           exit 1
-          ;;
-      *)  # Could this be a service name?
-          if 'echo "${SERVICES[@]}" | grep -q "$1"' ; then
-              services+=("$1")
-              shift 1
-          else
-            echo "${RED}Error: Unknown value: $YELLOW$1$CYAN" >&2
-            show_help
-            echo $WHITE
-            exit 1
-          fi
-#          break
-          ;;
+        fi
+        ;;
     esac
 done
-echo "${services[@]}"
-if [  ${#services[@]} -ne 0 ]; then SERVICES=(); SERVICES=("${services[@]}"); fi
-
-echo "Deploy to $deploy_to, mode=$deploy_mode, verbose=$verbose, silent=$silent, output_file='$output_file'"
-echo -n "Services: "
-echo "${SERVICES[@]}"
+#echo "${services[@]}"
+if [  ${#services[@]} -ne 0 ]; then
+  case "$deploy_to" in
+    local | docker)
+      SERVICES=()
+      SERVICES=("${services[@]}")
+      ;;
+    *)
+      echo "${RED}You cannot specify a service name when deploying to $YELLOW$deploy_to$CYAN"
+      show_help
+      echo $WHITE
+      exit 1
+      ;;
+  esac
+fi
+echo "Deploy to $deploy_to, mode=$deploy_mode, verbose=$verbose, silent=$silent"  #, output_file='$output_file'"
+echo "Services:" "${SERVICES[*]}"
 
 # Get a list of services
 # Collect test targets
@@ -134,13 +138,15 @@ echo "${SERVICES[@]}"
 SERVICES_COUNT=0
 GO_SERVICES=""
 GO_SERVICE_COUNT=0
-export GO111MODULE=on
+GO111MODULE=on # Everything about this uses go modules
+# Get the master library version, IFS = Internal Field Separator, versioning as per https://semver.org/
+libVer=$(grep -Po 'var VERSION = "\K.*(?=")' $projd/lib/version.go)
+IFS=.;libV=($libVer);IFS=
+#echo "Master library Version: $libVer =>" "${libV[@]}"
 for servicename in "${SERVICES[@]}"
 do
-  # Enable C code, as it is needed for SQLite3 database binary
-  # Enable go vendor because we need everything in one place to build the docker image
+  # Enable C code, as it is needed for SQLite3 database binary testing
   export CGO_ENABLED=1
-  export GOFLAGS="-mod=vendor"
 
   let SERVICES_COUNT+=1
   svc_dir="$projd/services/$servicename"
@@ -148,55 +154,106 @@ do
   if [ -f "$svc_dir/main.go" ]; then
     GO_SERVICES[$GO_SERVICE_COUNT]=$servicename
     let GO_SERVICE_COUNT+=1
-    if [ "$deploy_mode" != "stop" ]; then
-      echo "${ORANGE}Running tests on $LIME_YELLOW$servicename $POWDER_BLUE"
+    if [ $terminate -eq 0 ]; then
       cd $svc_dir
-      echo "${YELLOW}Cleaning up go.mod & running go test"
-      go mod edit -module $servicename
-      go mod edit -replace lib/common@v0.0.0=./lib/common
-      go mod edit -require lib/common@v0.0.0
+      echo "${ORANGE}Verifying $LIME_YELLOW$servicename$WHITE"
+      # We need lib for version control
+      if [ ! -d lib ]; then
+        cp -r ../../lib lib
+      fi
+      # We need go.mod to use lib
+      if [ ! -f go.mod ]; then
+        go mod init
+        go mod edit -module $servicename
+        go mod edit -require lib@v0.0.0
+        go mod edit -replace lib@v0.0.0=./lib
+      fi
+      svcLibVer=$(grep -Po 'var VERSION = "\K.*(?=")' lib/version.go)
+      IFS=.;svcLibV=($svcLibVer);IFS=
+      echo "Service library version: $svcLibVer =>" "${svcLibV[@]}"
+      ## Are the library versions different?
+      libEquality="equal"
+      for ((i=0; i<${#libV[@]}; i++))
+      do
+          if [ ${libV[i]} -gt ${svcLibV[i]} ]; then
+            libEquality="gt"
+            break
+          elif [ ${libV[i]} -lt ${svcLibV[i]} ]; then
+            libEquality="lt"
+            break
+          fi
+      done
+      export GOFLAGS="-mod=mod"  # Use the library within the microservice directory (default prior to 14)
+      rm -Rf $svc_dir/vendor
+      case "$libEquality" in
+        equal)
+          echo "${GREEN}Library versions equal"
+          export GOFLAGS="-mod=vendor"  ## Use the library within the vendor directory (default since 14)
+          go mod vendor
+          ;;
+        gt)
+          echo "${ORANGE}The master library version ($libVer) is NEWER than the version ($svcLibVer) being used by $LIME_YELLOW$servicename$WHITE"
+          read -p "Do you want to update this library from master? ${YELLOW}(y to update)${NORMAL} ? " yn
+          if [ "$yn" == "y" ]; then
+            rm -Rf lib
+            rm -Rf vendor/lib
+            cp -r ../../lib lib
+          fi
+          ;;
+        lt)
+          echo "${RED}The master library version ($libVer) is OLDER than the version ($svcLibVer) being used by $LIME_YELLOW$servicename$WHITE"
+          read -p "Do you want to update the master library with this library? ${YELLOW}(y to update)${NORMAL} ? " yn
+          if [ "$yn" == "y" ]; then
+            mv ../../lib ../../lib_V$libVer
+#            rm -Rf ../../lib
+            cp -r lib ../../lib
+            libVer=$(grep -Po 'var VERSION = "\K.*(?=")' $projd/lib/version.go)
+            IFS=.;libV=($libVer);IFS=
+            echo "Master library Updated to Version: $libVer =>" "${libV[@]}"
+          fi
+          ;;
+      esac
+      IFS=
+      echo "${YELLOW}Cleaning up go.mod & running go test $WHITE"
       go mod tidy
-      go mod vendor
-      go mod tidy
+
+      echo "${ORANGE}Running tests on $LIME_YELLOW$servicename$WHITE"
       go test ./... 2>&1
       echo $WHITE
 
       # Collect all `.go` files and `gofmt` against them. If some need formatting - print them.
-      echo -n "${CYAN}Checking go fmt: "
-      ERRS=$(find "$@" -type f -name \*.go | xargs gofmt -l 2>&1 || true)
-      if [ -n "${ERRS}" ]; then
-  #        echo "${YELLOW}Formatting the following files:"
-          for e in ${ERRS}; do
-            case "$e" in
-            *vendor/gopkg.in/yaml.v2/*)
+      echo -n "${CYAN}Format check: "
+#      go fmt ./...
+      fmtErrors=$(find "$@" -type f -name \*.go | xargs gofmt -l 2>&1 || true)
+      if [ "${fmtErrors}" ]; then
+          for f in ${fmtErrors}; do
+            case "$f" in
+            *vendor/gopkg.in/yaml.v2/* | *lib/*)
   #            echo "Ignore formatting of $e"
               ;;
             *)
-              echo " fmt $e:"
-              go fmt $e
+              echo -n "($f): "
+              go fmt $f
             esac
           done
       fi
       echo "${GREEN}ALL FORMATTED$WHITE"
 
       # Run `go vet` against all targets. If problems are found - print them.
-      echo -n "${CYAN}Checking go vet: "
-      ERRS=$(go vet ./... 2>&1 || true)
-      if [ -n "${ERRS}" ]; then
+      echo -n "${CYAN}Vetting..."
+      VetErrors=$(go vet ./... 2>&1 || true)
+      if [ "${VetErrors}" ]; then
           echo "${RED}FAIL"
-          echo "${ERRS}"
-          echo
+          echo "${ERRS}${WHITE}"
           exit 1
       fi
-      echo "${GREEN}PASS$WHITE"
-      echo
-
+      echo "${GREEN}VETTED OK$WHITE"
       if [ "$deploy_mode" != "test" ]; then
         echo -n "${CYAN}Building $servicename: "
         # Disable C code, enable Go modules
         export CGO_ENABLED=0
         echo $PWD
-        go build
+        go build # since 14 we need this to ignore vendor directory
         echo "${GREEN}DONE$WHITE"
       fi
     fi
@@ -230,7 +287,7 @@ case "$deploy_to" in
         if [ $silent == 0 ]; then
           cmd="$cmd --tail"
         fi
-#        bash -c "$cmd"
+        bash -c "$cmd"
         ks=($(kubectl get services))
         ## Is the output in the right format?
         expected_fmt="NAME:TYPE:EXTERNAL-IP"
@@ -385,7 +442,7 @@ case "$deploy_to" in
           sleep 3 ## Wait for everything to stabilise
           echo "${GREEN}All Containers Started${WHITE}"
         fi
-        if [ $silent == 0 ]; then
+        if [ $verbose == 1 ]; then
           echo $CYAN
           docker ps
           echo $WHITE

@@ -20,7 +20,7 @@ FROM alpine AS release
 WORKDIR /systemservice
 COPY --from=builder /systemservice ./server
 #copy defaultConfig.yaml .
-COPY ./dockerConfig.yaml ./frontend.yaml
+COPY cfg/dockerConfig.yaml ./cfg/systemservice.yaml
 #COPY products.json .
 EXPOSE 3550
 ENTRYPOINT ["/systemservice/server"]

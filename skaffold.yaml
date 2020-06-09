@@ -10,6 +10,8 @@ build:
     context: services/systemservice
   - image: frontend
     context: services/frontend
+  - image: routeguideservice
+    context: services/routeguide
 #  local: {}
 #  tagPolicy:
 #    gitCommit: {}

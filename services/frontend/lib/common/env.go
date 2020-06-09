@@ -1,23 +1,8 @@
 package common
 
 import (
-	"fmt"
-	"log"
 	"net"
-	"os"
 )
-
-func MustMapEnv(target *string, envKey string) {
-	v := os.Getenv(envKey)
-	if v == "" {
-		v = *target
-	}
-	if v == "" {
-		panic(fmt.Sprintf("environment variable %q not set", envKey))
-	}
-	*target = v
-	log.Printf("%q=%q", envKey, v)
-}
 
 // GetLocalIP returns the non loopback local IP of the host
 func GetLocalIP() string {

@@ -16,8 +16,9 @@ RUN apk add --no-cache ca-certificates \
 WORKDIR /frontend
 COPY --from=builder /go/bin/frontend /frontend/server
 #COPY ./defaultConfig.yaml .
-COPY ./dockerConfig.yaml ./frontend.yaml
+COPY cfg/dockerConfig.yaml ./frontend.yaml
 COPY ./templates ./templates
+COPY cfg/dockerConfig.yaml ./cfg/frontend.yaml
 #COPY ./static ./static
 EXPOSE 8080
 ENTRYPOINT ["/frontend/server"]

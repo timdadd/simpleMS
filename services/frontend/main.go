@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	version string = "1.0.1"
+	serviceName string = "frontend" // Make sure same cfg name in Dockerfile
+	version     string = "1.0.1"
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 	}
 
 	// Service details
-	var c, err = common.LoadConfig("frontend.yaml", "")
+	var c, err = common.LoadConfig(serviceName, "")
 	if err != nil {
 		fmt.Printf("Cannot load the configuration: %s", err)
 	}
@@ -55,7 +56,7 @@ func main() {
 	//mustConnGRPC(ctx, &servers.systemSvcConn, servers.systemSvcAddr)
 
 	c.KeyPrefix("system")
-	log.Printf("System Service URL:%s", c.GetStringKey(c.Key.ServiceAddress))
+	log.Printf("System Service URL:%s", c.ServiceAddress())
 
 	// This path works at the command line, but in GoLand it starts at route
 	tpl := template.Must(template.ParseFiles("./templates/serverStatus.html"))
@@ -63,7 +64,7 @@ func main() {
 	client := &http.Client{Transport: &transport}
 	req, _ := http.NewRequest(
 		"GET",
-		c.GetStringKey(c.Key.ServiceAddress),
+		c.ServiceAddress(),
 		nil,
 	)
 	req.Close = false
@@ -105,8 +106,8 @@ func main() {
 	})
 
 	c.KeyPrefix("frontend")
-	c.Log.Printf("Listening on http://%s:%v", common.GetLocalIP(), c.GetIntKey(c.Key.Port))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", c.GetIntKey(c.Key.Port)), nil))
+	c.Log.Printf("Listening on http://%s:%v", common.GetLocalIP(), c.Port())
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", c.Port()), nil))
 }
 
 //func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
