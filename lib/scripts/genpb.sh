@@ -14,7 +14,7 @@ pb_dir="../../pb"
 #lpb_dir="${pb_file}_pb"
 lpb_dir="pb"
 
-source ./lib/scripts/common.sh
+source ./lib/scripts/env.sh
 
 echo "Generating protobuf files for ${YELLOW}$pb_file${WHITE}"
 
@@ -23,7 +23,6 @@ if [ ! -d ../../services ]; then
   exit 1
 fi
 
-
 pb_df=$pb_dir/$pb_file.proto
 if [ ! -f $pb_df ]; then
   echo "${RED}No protobuf definition file found at $pb_df$WHITE"
@@ -31,6 +30,7 @@ if [ ! -f $pb_df ]; then
 fi
 
   ## Are the go protoc-gen files installed?
+source ./lib/scripts/go/sh
 install_protogen protobuf protoc-gen-go
 install_protogen grpc protoc-gen-go-grpc
 

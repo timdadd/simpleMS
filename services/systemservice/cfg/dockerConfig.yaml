@@ -1,9 +1,9 @@
 system:
   service_addr: http://127.0.0.1:8082
-  port: 8082
+  port: 3550
 
 route-guide:
-  service_addr: http://127.0.0.1:8084
+  service_addr: routeguide:10000
   port: 8084 # The server's port
   server_host_override: x.test.youtube.com
   tls: false # Connection uses TLS if true, else plain TCP

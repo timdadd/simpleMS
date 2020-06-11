@@ -18,7 +18,7 @@ if [ ! -d $projd/services ];then
   exit 1
 fi
 
-source lib/scripts/common.sh
+source lib/scripts/env.sh
 
 show_help () {
     echo "Usage: $0 {local|docker|minikube|gke} [option...] {start|stop|dev|test|build|clean} [service names ...]" >&2
@@ -51,9 +51,7 @@ terminate=0
 deploy_to="minikube"
 deploy_mode="start"
 services=()
-IFS=,
-svc_csv=${SERVICES[*]}
-IFS=
+IFS=",";svc_csv=${SERVICES[*]};IFS=""
 while :
 do
     if [ $# = 0 ]; then break ; fi
@@ -100,7 +98,7 @@ do
         exit 1
         ;;
       *)  # Could this be a service name?
-        svc_exists=($(echo $svc_csv | grep -ic ",$1," || true))
+        svc_exists=$(echo ",$svc_csv," | grep -ic ",$1," || true)
         if [ "$svc_exists" == "1" ] ; then
           services+=("$1")
           shift 1
@@ -141,13 +139,12 @@ GO_SERVICE_COUNT=0
 GO111MODULE=on # Everything about this uses go modules
 # Get the master library version, IFS = Internal Field Separator, versioning as per https://semver.org/
 libVer=$(grep -Po 'var VERSION = "\K.*(?=")' $projd/lib/version.go)
-IFS=.;libV=($libVer);IFS=
+IFS=".";libV=($libVer);IFS=""
 #echo "Master library Version: $libVer =>" "${libV[@]}"
 for servicename in "${SERVICES[@]}"
 do
   # Enable C code, as it is needed for SQLite3 database binary testing
   export CGO_ENABLED=1
-
   let SERVICES_COUNT+=1
   svc_dir="$projd/services/$servicename"
       ## If we find main.go then OK
@@ -169,7 +166,7 @@ do
         go mod edit -replace lib@v0.0.0=./lib
       fi
       svcLibVer=$(grep -Po 'var VERSION = "\K.*(?=")' lib/version.go)
-      IFS=.;svcLibV=($svcLibVer);IFS=
+      IFS=".";svcLibV=($svcLibVer);IFS=""
       echo "Service library version: $svcLibVer =>" "${svcLibV[@]}"
       ## Are the library versions different?
       libEquality="equal"
@@ -208,12 +205,11 @@ do
 #            rm -Rf ../../lib
             cp -r lib ../../lib
             libVer=$(grep -Po 'var VERSION = "\K.*(?=")' $projd/lib/version.go)
-            IFS=.;libV=($libVer);IFS=
+            IFS=".";libV=($libVer);IFS=""
             echo "Master library Updated to Version: $libVer =>" "${libV[@]}"
           fi
           ;;
       esac
-      IFS=
       echo "${YELLOW}Cleaning up go.mod & running go test $WHITE"
       go mod tidy
 
@@ -260,6 +256,7 @@ do
   fi
 done
 echo "Found $SERVICES_COUNT services & $GO_SERVICE_COUNT GO services"
+IFS=" \t\n"
 
 if [ "$deploy_mode" == "test" ]; then exit 0; fi
 
@@ -289,6 +286,7 @@ case "$deploy_to" in
         fi
         bash -c "$cmd"
         ks=($(kubectl get services))
+        echo $ks
         ## Is the output in the right format?
         expected_fmt="NAME:TYPE:EXTERNAL-IP"
         actual_fmt="${ks[0]}:${ks[1]}:${ks[3]}"
@@ -458,6 +456,123 @@ case "$deploy_to" in
         docker network prune -f
         echo "${GREEN}Cleaned up docker containers & images"
       ;;
+    esac
+  ;;
+
+  gke)
+    echo "${BRIGHT}Deploying to Google Cloud Google Kubernetes Engine (GKE)${NORMAL}"
+    gcloudProject="$(gcloud config get-value project)" # Get the project name
+    if [ ! $gcloudProject ]; then
+      echo "${RED}Please configure the gcloud project ID. ${YELLOW}gcloud config set project ${BRIGHT}project-id$NORMAL$WHITE"
+      exit
+    fi
+    echo "${CYAN}Project: $gcloudProject$WHITE"
+
+    ke_clusterName=${projd##*/} # make the cluster name same as project name
+    ke_clusterZone=$(gcloud config get-value compute/zone) # Use compute zone for cluster zone
+    cd "$projd"
+    case "$deploy_mode" in
+      start | restart | dev)
+        bash -c "gcloud services enable container.googleapis.com"
+        ## Is the cluster already created
+        #WARNING: Currently VPC-native is not the default mode during cluster creation. In the future, this will become the default mode and can be disabled using `--no-enable-ip-alias` flag. Use `--[no-]enable-ip-alias` flag to suppress this warning.
+        #WARNING: Starting with version 1.18, clusters will have shielded GKE nodes by default.
+        #WARNING: Your Pod address range (`--cluster-ipv4-cidr`) can accommodate at most 1008 node(s).
+        IFS=$' \n'  # 0x0A=/n, default: IFS=$' \t\n'
+        kc=($(gcloud container clusters list --filter="$ke_clusterName"))
+        IFS=""
+        ## 8 Columns[0-7]: NAME:LOCATION:MASTER_VERSION:MASTER_IP:MACHINE_TYPE:NODE_VERSION:NUM_NODES:STATUS
+        if [ $kc ]; then
+          ## Is the output in the right format?
+          expected_fmt="NAME:LOCATION:MASTER_IP:STATUS:$ke_clusterName"
+          actual_fmt="${kc[0]}:${kc[1]}:${kc[3]}:${kc[7]}:${kc[8]}"
+          if [ "$expected_fmt" != "$actual_fmt" ] ; then
+            echo 'Unexpected format for "kubectl get container clusters list"'
+            echo "Expected: $expected_fmt"
+            echo "Received: $actual_fmt"
+            gcloud container clusters list --filter=$ke_clusterName
+            exit 1
+          fi
+          if [ "${kc[15]}" != "RUNNING" ]; then
+            echo "${RED}Cluster $ke_clusterName is not running!$WHITE"
+            exit 1
+          fi
+          echo "${GREEN}Cluster $ke_clusterName is running${WHITE}"
+          cmd="gcloud container clusters get-credentials $ke_clusterName"
+        else
+          cmd="gcloud container clusters create $ke_clusterName --enable-autoupgrade \
+                --enable-autoscaling --min-nodes=3 --max-nodes=10 --num-nodes=5 --zone=$ke_clusterZone"
+        fi
+        echo "$cmd"
+        bash -c "$cmd"
+        kn=($(kubectl get nodes))  ## Check all is well
+        # Do we need to add a check here?
+        echo $kn
+        # Enable Google Container Registry (GCR) on the GC project
+        gcloud services enable containerregistry.googleapis.com
+        # Configure the docker CLI to authenticate to GCR
+        gcloud auth configure-docker -q
+        # Use skaffold to do all the heavy lifting, build and push to GCR as per the kubernetes manifest
+        run_mode=${deploy_mode/restart/run}
+        run_mode=${run_mode/start/run}
+        cmd="skaffold $run_mode --default-repo=gcr.io/$gcloudProject"
+        if [ $verbose == 1 ]; then
+          cmd="$cmd -vdebug"
+        fi
+        if [ $silent == 0 ]; then
+          cmd="$cmd --tail"
+        fi
+        bash -c "$cmd"
+        IFS=" \n"
+        ks=($(kubectl get services))
+        IFS=""
+        ## Is the output in the right format?
+        expected_fmt="NAME:TYPE:EXTERNAL-IP"
+        actual_fmt="${ks[0]}:${ks[1]}:${ks[3]}"
+        if [ "$expected_fmt" != "$actual_fmt" ] ; then
+          echo 'Unexpected format for "kubectl get services"'
+          echo "Expected: $expected_fmt"
+          echo "Received: $actual_fmt"
+          kubectl get services
+          exit 1
+        fi
+        echo "Checking all the services are working as expected"
+          ## 6 Columns: NAME:TYPE:CLUSTER-IP:EXXTERNAL-IP:PORT(S):AGE
+        OK_Count=0
+        i=0
+        for sk in "${ks[@]}"
+        do
+#          echo "$sk, $i"
+          # Up the service count?
+          for s in "${GO_SERVICES[@]}"
+          do
+            if [ "$s" == "$sk" ]; then
+              let OK_Count+=1
+              for j in {0..5};
+              do printf "${ks[0+j]}=${ks[i+j]},"; done
+              echo""
+            fi
+          done
+          i=$((i+1))
+        done
+        echo "$OK_Count Services Running"
+        echo "Looking for $GO_SERVICE_COUNT services"
+        if [[ "$OK_Count" != "$GO_SERVICE_COUNT" ]]; then
+          echo -e "${RED}Not all the services are deployed!!! $NORMAL"
+          exit 1
+        fi
+        kubectl get service frontend-external
+        ;;
+
+      clean | stop)
+        gcloud auth configure-docker -q
+        bash -c "skaffold delete"
+        read -p "Do you want to delete GKE Cluster $ke_clusterName ${YELLOW}(y to stop)${NORMAL} ? " yn
+        if [ "$yn" == "y" ]; then
+          cmd="gcloud container clusters delete $ke_clusterName"
+          bash -c "$cmd"
+        fi
+        ;;
     esac
   ;;
 esac
