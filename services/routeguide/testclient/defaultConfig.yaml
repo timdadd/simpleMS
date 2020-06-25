@@ -1,0 +1,12 @@
+system:
+  service_addr: http://127.0.0.1:8082
+  port: 8082
+
+routeguide:
+  service_addr: 127.0.0.1:10000 # this used by other services to find route-guide - note not http
+  port: 10000 # The server's port
+  server_host_override: x.test.youtube.com
+  tls: false # Connection uses TLS if true, else plain TCP
+  cert_file: # The TLS cert file
+  key_file:  # The TLS key file
+  json_feature_file: # A json file containing a list of features

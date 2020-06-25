@@ -1,0 +1,2 @@
+book:
+  port: 8086 # The server's port

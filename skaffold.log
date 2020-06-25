@@ -1,0 +1,149 @@
+Generating tags...
+ - bookservice -> bookservice:v0.1.1-11-ge426504-dirty
+ - systemservice -> systemservice:v0.1.1-11-ge426504-dirty
+ - routeguideservice -> routeguideservice:v0.1.1-11-ge426504-dirty
+ - frontend -> frontend:v0.1.1-11-ge426504-dirty
+Checking cache...
+ - bookservice: Found Locally
+ - systemservice: Found Locally
+ - routeguideservice: Found Locally
+ - frontend: Found Locally
+Tags used in deployment:
+ - bookservice -> bookservice:2fcc03477670d39d8a9d1b1414207e4e6765730e0918a2d209b09e9f4f2bd614
+ - systemservice -> systemservice:67a1cefddc0c944f918f6e825c150e2cbc6010c1ccae30252a580d72c044a643
+ - routeguideservice -> routeguideservice:fee37a18e38d501f7673425da8c36e41869b1aa68b5274a53ff6128a06dc2830
+ - frontend -> frontend:f2da3697c95be7709283bea8dcf7276b22dde9d5070381ce19f6c74bf3cb1dad
+Starting deploy...
+ - deployment.apps/bookservice configured
+ - service/bookservice configured
+ - deployment.apps/frontend configured
+ - service/frontend configured
+ - service/frontend-external configured
+ - deployment.apps/routeguideservice configured
+ - service/routeguideservice configured
+ - deployment.apps/systemservice configured
+ - service/systemservice configured
+Waiting for deployments to stabilize...
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+    - pod/bookservice-66787d457b-5vrmj: creating container server
+ - deployment/frontend: waiting for rollout to finish: 1 old replicas are pending termination...
+    - pod/frontend-74cdcb48bb-hhscj: creating container server
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+    - pod/routeguideservice-7b7ffb4f6f-fpgg9: creating container server
+ - deployment/systemservice: waiting for rollout to finish: 1 old replicas are pending termination...
+    - pod/systemservice-79dc599854-jbjjw: creating container server
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/frontend: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/frontend: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/frontend: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/frontend: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/frontend is ready. [3/4 deployment(s) still pending]
+ - deployment/bookservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/routeguideservice: waiting for rollout to finish: 1 old replicas are pending termination...
+ - deployment/systemservice is ready. [2/4 deployment(s) still pending]
+ - deployment/bookservice is ready. [1/4 deployment(s) still pending]
+ - deployment/routeguideservice is ready.
+Deployments stabilized in 4.845868158s
+Press Ctrl+C to exit
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the configuration"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="Adding the file paths:[]"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the defaults"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="No default AppConfig file found"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the AppConfig file:systemservice.yaml"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="map[frontend:map[port:8080] route-guide:map[port:8084 server_host_override:x.test.youtube.com service_addr:routeguide:10000 tls:false] system:map[port:3550 service_addr:http://127.0.0.1:8082]]"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- ENV_PLATFORM = "
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="+ system"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 3550"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="http://172.18.0.13:3550"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 3550"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="Starting system service on port 3550"
+[systemservice-79dc599854-jbjjw server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 3550"
+[frontend-6b77d67987-svgst server] Error from server (NotFound): pods "frontend-6b77d67987-svgst" not found
+[routeguideservice-7896f8bd78-vvxh7 server] Error from server (NotFound): pods "routeguideservice-7896f8bd78-vvxh7" not found
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the configuration"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="Adding the file paths:[]"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the defaults"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="No default AppConfig file found"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the AppConfig file:book.yaml"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="map[book:map[port:4000 server_host_override:x.test.youtube.com tls:false]]"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- ENV_PLATFORM = "
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="+ book"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 4000"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=info msg="172.18.0.10:4000"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 4000"
+[bookservice-66787d457b-5vrmj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- tls = false"
+[bookservice-87f465b9f-c9lqn server] Error from server (BadRequest): container "server" in pod "bookservice-87f465b9f-c9lqn" is waiting to start: ContainerCreating
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the configuration"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="Adding the file paths:[]"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the defaults"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="No default AppConfig file found"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the AppConfig file:routeguide.yaml"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="map[route-guide:map[port:10000 server_host_override:x.test.youtube.com tls:false] system:map[service_addr:http://systemservice:3550]]"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- ENV_PLATFORM = "
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+ route-guide"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 10000"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=info msg="172.18.0.12:10000"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 10000"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- tls = false"
+[routeguideservice-7b7ffb4f6f-fpgg9 server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- json_feature_file = "
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the configuration"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="Adding the file paths:[]"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the defaults"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="No default AppConfig file found"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="Loading the AppConfig file:frontend.yaml"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="map[book:map[service_addr:book:4000] frontend:map[port:8080] route-guide:map[server_host_override:x.test.youtube.com service_addr:route-guide:10000] system:map[service_addr:http://systemservice:3550]]"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- ENV_PLATFORM = kubernetes"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+ book"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- tls = "
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- service_addr = bookservice:4000"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- service_addr = bookservice:4000"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=info msg="Established GRPC onnection to book"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+ frontend"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- listen_addr = "
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 8080"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=info msg="starting server on :8080"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+ frontend"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 8080"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=info msg="Listening on http://172.18.0.11:8080"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="+---- port = 8080"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request started" http.req.id=dc65e5c9-58ad-4c60-8470-9e0eec7d480e http.req.method=GET http.req.path=/ session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request complete" http.req.id=dc65e5c9-58ad-4c60-8470-9e0eec7d480e http.req.method=GET http.req.path=/ http.resp.bytes=29 http.resp.status=302 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request started" http.req.id=713465a4-ebed-435e-b5df-0165df61b4e1 http.req.method=GET http.req.path=/books session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="List books"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request complete" http.req.id=713465a4-ebed-435e-b5df-0165df61b4e1 http.req.method=GET http.req.path=/books http.resp.bytes=5525 http.resp.status=200 http.resp.took_ms=2 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request started" http.req.id=67b03d14-4cd8-4ca5-982a-57cdf3121861 http.req.method=GET http.req.path=/static/styles/styles.css session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request complete" http.req.id=67b03d14-4cd8-4ca5-982a-57cdf3121861 http.req.method=GET http.req.path=/static/styles/styles.css http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=1 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request started" http.req.id=ce47421a-93e9-4ab5-bc56-42c70ac34be3 http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request complete" http.req.id=ce47421a-93e9-4ab5-bc56-42c70ac34be3 http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=7 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request started" http.req.id=c78a9226-9b40-489b-a413-44bacf1e65af http.req.method=GET http.req.path=/static/brand/bookshelf-fill-blue.svg session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:53 UTC" level=debug msg="request complete" http.req.id=c78a9226-9b40-489b-a413-44bacf1e65af http.req.method=GET http.req.path=/static/brand/bookshelf-fill-blue.svg http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=5a2a3d95-fa5e-4db4-a6fb-7f6edbc38d2b http.req.method=GET http.req.path=/books/add session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="Add Book"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=5a2a3d95-fa5e-4db4-a6fb-7f6edbc38d2b http.req.method=GET http.req.path=/books/add http.resp.bytes=7322 http.resp.status=200 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=0fb0ff09-a7b3-433b-ad63-f29fa997eeca http.req.method=GET http.req.path=/static/javascript/form-validation.js session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=dc5696ac-ecdd-4c26-a93f-4221668c88e0 http.req.method=GET http.req.path=/static/styles/styles.css session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=0fb0ff09-a7b3-433b-ad63-f29fa997eeca http.req.method=GET http.req.path=/static/javascript/form-validation.js http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=dc5696ac-ecdd-4c26-a93f-4221668c88e0 http.req.method=GET http.req.path=/static/styles/styles.css http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=eb22dd8c-dd39-4f16-9592-5ea37f82b6bd http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=eb22dd8c-dd39-4f16-9592-5ea37f82b6bd http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=9e896206-9e55-492b-b48b-c4e46a4264fa http.req.method=POST http.req.path=/books/add session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="Create Book"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="Book From Form"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=info msg="Read from form:title:\"The cat in the hat\" author:\"Dr Seuss\"" http.req.id=9e896206-9e55-492b-b48b-c4e46a4264fa http.req.method=POST http.req.path=/books/add session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=9e896206-9e55-492b-b48b-c4e46a4264fa http.req.method=POST http.req.path=/books/add http.resp.bytes=0 http.resp.status=302 http.resp.took_ms=6 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=010f7c95-b0b3-4a68-8bfd-346e7afb55a6 http.req.method=GET http.req.path=/books/1 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="Book Details"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="Book from request"
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=info msg="Read from serviceid:\"1\" title:\"The cat in the hat\" author:\"Dr Seuss\"" http.req.id=010f7c95-b0b3-4a68-8bfd-346e7afb55a6 http.req.method=GET http.req.path=/books/1 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=010f7c95-b0b3-4a68-8bfd-346e7afb55a6 http.req.method=GET http.req.path=/books/1 http.resp.bytes=6804 http.resp.status=200 http.resp.took_ms=2 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=c110d9cb-1a08-482e-8ff2-b19ab6854122 http.req.method=GET http.req.path=/static/styles/styles.css session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=c110d9cb-1a08-482e-8ff2-b19ab6854122 http.req.method=GET http.req.path=/static/styles/styles.css http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request started" http.req.id=ede63d31-c522-40e2-bf2a-69a58ef6e1f1 http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg session=971d5487-3705-4a83-a80d-88b2048c06eb
+[frontend-74cdcb48bb-hhscj server] time="25 Jun 20 14:54 UTC" level=debug msg="request complete" http.req.id=ede63d31-c522-40e2-bf2a-69a58ef6e1f1 http.req.method=GET http.req.path=/static/brand/bookshelf-solid.svg http.resp.bytes=19 http.resp.status=404 http.resp.took_ms=0 session=971d5487-3705-4a83-a80d-88b2048c06eb
