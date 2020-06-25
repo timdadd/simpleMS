@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"lib/common"
+	"lib/common_test"
 	"path"
 	"testing"
 )
@@ -21,20 +21,20 @@ func TestIsJsonEqual(t *testing.T) {
 		t.Log(err)
 		t.FailNow()
 	}
-	assert.True(t, common.IsJsonEqual(t, "MemberEqual", createJson, createdJson))
-	assert.True(t, common.IsJsonEqual(t, "MemberEqual", createdJson, createJson))
-	assert.False(t, common.IsJsonEqual(t, "DeepEqual", createJson, createdJson))
-	assert.True(t, common.IsJsonEqual(t, "DeepEqual", createJson, createJson))
-	assert.True(t, common.IsJsonEqual(t, "DeepEqual", createdJson, createdJson))
-	assert.False(t, common.IsJsonEqual(t, "KeyEqual", createJson, createdJson))
+	assert.True(t, common_test.IsJsonEqual(t, "MemberEqual", createJson, createdJson))
+	assert.True(t, common_test.IsJsonEqual(t, "MemberEqual", createdJson, createJson))
+	assert.False(t, common_test.IsJsonEqual(t, "DeepEqual", createJson, createdJson))
+	assert.True(t, common_test.IsJsonEqual(t, "DeepEqual", createJson, createJson))
+	assert.True(t, common_test.IsJsonEqual(t, "DeepEqual", createdJson, createdJson))
+	assert.False(t, common_test.IsJsonEqual(t, "KeyEqual", createJson, createdJson))
 
 	updatedJson, err := readTestFile(t, "updated.json")
 	if !assert.Nil(t, err) {
 		t.Log(err)
 		t.FailNow()
 	}
-	assert.False(t, common.IsJsonEqual(t, "DeepEqual", updatedJson, createdJson))
-	assert.True(t, common.IsJsonEqual(t, "KeyEqual", updatedJson, createdJson))
+	assert.False(t, common_test.IsJsonEqual(t, "DeepEqual", updatedJson, createdJson))
+	assert.True(t, common_test.IsJsonEqual(t, "KeyEqual", updatedJson, createdJson))
 }
 
 // Read file from the test file path

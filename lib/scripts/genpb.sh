@@ -1,72 +1,86 @@
-#!/bin/bash
+#!/bin/bash -eu
 
-# V0.0.2 : TCD : First version
-# V0.0.3 : TCD : If mod file exists check pb is included
+# Tim Dadd: 06-06-2020: Genesis
+# Subsequent versions managed with GIT VCS
+
+# check https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html#The-Set-Builtin for options
+# Exit immediately if error, unset varible usage is an error, if a pipe command fails then use output of previous
+set -o nounset
+set -o errexit
+set -o pipefail
 
 ## This script generates the local gRPC go file and also generally initialises the project directory
 ## Start by defining a pb file in the root pb directory and then create a script to call this
 ## within the project directory
 
+## To use GOOGLEPAIS it needs to be cloned
+## CD ~
+## git clone https://github.com/googleapis/googleapis
+
 ## Then you're ready to write main.go etc.
 
-pb_file=$1
-pb_dir="../../pb"
-#lpb_dir="${pb_file}_pb"
-lpb_dir="pb"
+pbFile=$1  ## e.g. "book", "task"
+pbVersion=$2  ## e.g. "v1", "v2"
+pbFilename="$1_$2.proto"
+projectpbDir="../../pb"
+pbDirFilename=$projectpbDir/$pbFilename
+servicePbDir="pb"
+serviceDir="$PWD"
+PROTOC_DIR="/usr/local/include"
+GOOGLEAPIS_DIR="$HOME/googleapis"
 
 source ./lib/scripts/env.sh
 
-echo "Generating protobuf files for ${YELLOW}$pb_file${WHITE}"
+echo "Generating protobuf files for ${YELLOW}$pbFile $pbVersion${WHITE}"
 
 if [ ! -d ../../services ]; then
   echo "${RED}This needs to be run from a microservice directory$WHITE"
   exit 1
 fi
 
-pb_df=$pb_dir/$pb_file.proto
-if [ ! -f $pb_df ]; then
-  echo "${RED}No protobuf definition file found at $pb_df$WHITE"
+if [ ! -f $pbDirFilename ]; then
+  echo "${RED}No protobuf definition file found at $pbDirFilename$WHITE"
   exit 1
 fi
 
   ## Are the go protoc-gen files installed?
-source ./lib/scripts/go/sh
-install_protogen protobuf protoc-gen-go
-install_protogen grpc protoc-gen-go-grpc
+source ./lib/scripts/go.sh
+install_protogen google.golang.org/protobuf/cmd protoc-gen-go
+install_protogen google.golang.org/grpc/cmd protoc-gen-go-grpc
+install_protogen github.com/grpc-ecosystem/grpc-gateway protoc-gen-grpc-gateway
+install_protogen github.com/grpc-ecosystem/grpc-gateway protoc-gen-swagger
 
 ## OK now for the stuff specific to this microservice
 servicename=${PWD##*/}
 
-if [ ! -d ./$lpb_dir ]; then
-  echo "${GREEN}Creating $lpb_dir directory$WHITE"
-  mkdir $lpb_dir
+if [ ! -d ./$servicePbDir ]; then
+  echo "${GREEN}Creating $servicePbDir directory$WHITE"
+  mkdir $servicePbDir
 fi
 
-## do we have a go.mod file - could be a new project
-if [ ! -f go.mod ]; then
-  echo "${YELLOW}Creating a go.mod file for service $GREEN$servicename$WHITE"
-  go mod init
-  go mod edit -module $servicename
-  go mod edit -require lib@v0.0.0
-  go mod edit -replace lib@v0.0.0=./lib
-  go get -u google.golang.org/protobuf/proto
-  echo $CYAN
-  cat go.mod
-  echo $WHITE
-fi
-#go mod edit -require pb@v0.0.0
-#go mod edit -replace pb@v0.0.0=./$lpb_dir
+## The protoc command line is so annoying, let's normalise it in a function
+function protoc() {
+  cmd="protoc -I$projectpbDir  -I$PROTOC_DIR -I$GOOGLEAPIS_DIR --$1./$servicePbDir $pbFilename"
+  echo "$cmd"
+  bash -c "$cmd"
+}
 
-## pb generation - needed for structures
-protoc -I=$pb_dir $pb_df --go_out=$lpb_dir
+protoc "go_out="
+protoc "go-grpc_out="
+protoc "grpc-gateway_out=logtostderr=true:"
+protoc "swagger_out=logtostderr=true:"
 
-## grpc generation - needed for rpc comms
-protoc -I=$pb_dir $pb_df --go-grpc_out=$lpb_dir
+# Use go_package to determine where the files have been generated
+# option go_package = "directory;package";
+IFS=";";goPkg=($(grep -Po 'option go_package = "\K.*(?=")' $pbDirFilename));IFS=""
+echo "${goPkg[0]} ${goPkg[1]}"
+pkgDir="$servicePbDir/${goPkg[0]}"
+pkgName="${goPkg[1]}"
 
-## Show what's been done
+# Show what's been done - regardless of version
 i=1
-pb_gen_files=($lpb_dir/*.pb.go)
-for f in "${pb_gen_files[@]}"
+pbFilesGenerated=($pkgDir/*.pb.go)
+for f in "${pbFilesGenerated[@]}"
 do
   colour=$(tput setaf $i)
   echo $colour
@@ -82,25 +96,30 @@ echo $WHITE
 
 ## Create the mockgen file if mockgen loaded
 ## Cannot use -source=because grpc package imports two different packages called backoff, see https://github.com/golang/mock/issues/156
+## go get golang.org/x/tools/go/packages see https://github.com/golang/mock/issues/266
+## Something is wrong with mockgen sometimes - I think it has something to do with version number
+## I will look at this later - far too frustrating to spend anymore time on it
 if [ "$(whatdir mockgen)" ]; then
-  mock_dir="mox"
-  mock_pkg="${pb_file}_mock"
-  mock_file="grpc_pb_mock.go"
-  echo "${BLUE}Creating the associated mock file in ${mock_dir}${WHITE}"
-  if [ ! -d ./$mock_dir ]; then
-    echo "${GREEN}Creating $mock_dir directory$WHITE"
-    mkdir $mock_dir
+  mockDir="mox"
+  mockPkg="${pbFile}_mock"
+  mockFile="${pbFile}_grpc_pb_mock.go"
+  echo "${BLUE}Creating $mockFile mock routines in ${mockDir}${WHITE}"
+  if [ ! -d ./$mockDir ]; then
+    echo "${GREEN}Creating $mockDir directory$WHITE"
+    mkdir $mockDir
   fi
-  cd $lpb_dir
-  interfaces=($(grep -Po 'type \K.*(?=interface)' *_grpc.pb.go))
-  IFS=,
-#  echo "${interfaces[0]}" "${interfaces[1]}" "${interfaces[*]}"
-  cmd="mockgen -destination=../$mock_dir/$mock_file -package=$mock_pkg . ${interfaces[*]}"
-  IFS=
+  cd $pkgDir
+  IFS=$'\n\b'
+  interfaceArray=($(grep -Po 'type \K.*(?= interface)' *_grpc.pb.go))
+  IFS=",";interfaces="${interfaceArray[*]}";IFS=""
+  echo "Interfaces:$interfaces"
+#  cd $serviceDir
+  cmd="mockgen -destination=../$mockDir/$mockFile -package=$mockPkg . $interfaces"
+#  cmd="mockgen $pkgDir -package=$mockPkg $interfaces"
   echo "$cmd"
   bash -c "$cmd"
   cd ..
-  if [ -f ./$mock_dir/$mock_file ]; then
-    echo "${GREEN}Mock file ${YELLOW}$mock_file${GREEN} created in $mock_dir with package name $mock_pkg$WHITE"
+  if [ -f ./$mockDir/$mockFile ]; then
+    echo "${GREEN}Mock file ${YELLOW}$mockFile${GREEN} created in $mockDir with package name $mockPkg${WHITE}"
   fi
 fi

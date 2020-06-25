@@ -1,0 +1,44 @@
+{{ define "list" }}
+  {{ template "header" . }}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{$.platform.url}}">{{$.platform_name}}</a></li>
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Books</li>
+    </ol>
+  </nav>
+
+  <div class="bookshelf-template">
+    <h1>Bookshelf</h1>
+    <p class="lead">Always a good read</p>
+  </div>
+
+  <div class="container">
+    <a href="/books/add" class="btn btn-outline-primary" role="button" aria-pressed="true">
+      <span>Add book</span>
+    </a>
+    {{if $.books}}<div class="row row-cols-1 row-cols-md-2">{{end}}
+
+    {{range $.books}}
+      <div class="col mb-4">
+        <div class="card">
+          <h4 class="my-0 font-weight-normal"><a href="/books/{{.Id}}">{{.Title}}</a></h4>
+          <div class="card-body">
+            <a href="/books/{{.Id}}">
+              <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://placekitten.com/g/200/300{{end}}">
+            </a>
+              {{if .Author}}<h5 class="card-title">By {{ .Author }}</h5>{{end}}
+              {{/*        <h6 class="card-subtitle mb-2 text-muted">{{ .DatePublished }}</h6>*/}}
+              <p class="card-text">{{ .Description }}</p>
+          </div>
+        </div>
+      </div>
+  {{else}}
+    <p>No books found.</p>
+  {{ end }}
+    </div>
+  </div>
+
+{{ template "footer" . }}
+
+{{ end }}

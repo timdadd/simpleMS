@@ -6,12 +6,14 @@ build:
   # must provide a "default repo" using one of the methods described
   # here:
   # https://skaffold.dev/docs/concepts/#image-repository-handling
+  - image: bookservice
+    context: services/book
   - image: systemservice
     context: services/systemservice
-  - image: frontend
-    context: services/frontend
   - image: routeguideservice
     context: services/routeguide
+  - image: frontend
+    context: services/frontend
 #  local: {}
 #  tagPolicy:
 #    gitCommit: {}

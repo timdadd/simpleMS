@@ -13,3 +13,5 @@ vendor/
 ## Ignore anything put in an archive directory
 archive/
 
+/lib_V0.1.4/
+/lib_V0.1.3/

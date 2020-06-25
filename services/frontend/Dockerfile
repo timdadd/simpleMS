@@ -7,7 +7,7 @@ ENV PROJECT simplems/src/frontend
 WORKDIR /go/src/$PROJECT
 
 COPY . .
-RUN ls -la /
+#RUN ls -la /
 RUN go install .
 
 FROM alpine as release

@@ -1,0 +1,142 @@
+// This is an rpc implementation of the google bookshelf example
+
+syntax = "proto3";
+
+// filename and package name should be the same
+option go_package = "pb_book_v1;pb_book_v1";
+
+package book.v1;
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+
+// The API has a collection of Book resources, named `books/*`
+service BookService {
+  // Creates a book, and returns the new Book.
+  rpc CreateBook(CreateBookRequest) returns (Book) {
+    option (google.api.http) = {
+      post: "/v1/books"
+      body: "book"
+    };
+    option (google.api.method_signature) = "book";
+  }
+
+  // Gets a book. Returns NOT_FOUND if the book does not exist.
+  rpc GetBook(GetBookRequest) returns (Book) {
+    option (google.api.http) = {
+      get: "/v1/{id=books/*}"
+    };
+    option (google.api.method_signature) = "id";
+  }
+
+  // Lists books. The order is unspecified but deterministic. Newly created
+  // books will not necessarily appear at the end of this list.
+  rpc ListBooks(ListBooksRequest) returns (ListBooksResponse) {
+    option (google.api.http) = {
+      get: "/v1/books"
+    };
+  }
+
+  // Deletes a book. Returns NOT_FOUND if the book does not exist.
+  rpc DeleteBook(DeleteBookRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/{id=books/*}"
+    };
+    option (google.api.method_signature) = "id";
+  }
+
+  // Updates a book. Returns INVALID_ARGUMENT if the id of the book
+  // is non-empty and does not equal the existing id.
+  rpc UpdateBook(UpdateBookRequest) returns (Book) {
+    option (google.api.http) = {
+      put: "/v1/{id=books/*}"
+      body: "book"
+    };
+    option (google.api.method_signature) = "book";
+  }
+
+}
+
+// A single book
+message Book {
+  option (google.api.resource) = {
+    type: "Book",
+    pattern: "books/{book_id}"
+  };
+  // The resource id of the book.
+  // Book ids have the form `books/{book_id}`.
+  // The id is ignored when creating a book.
+  string id = 1 [
+                  (google.api.field_behavior) = REQUIRED,
+                  (google.api.resource_reference).type = "Book"
+                  ];
+
+
+  string title = 2;  // The title of the book.
+  string author = 3;  // The author of the book.
+  string publishedDate = 4;  // The date the book was published
+  string imageURL = 5;  // The location of the image associated with the book
+  string description =6; // The description of the book
+}
+
+
+// Request message for BookService.CreateBook
+message CreateBookRequest {
+  // The book to create.
+  Book book = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for BookService.GetBook
+message GetBookRequest {
+  // The id of the book to retrieve.
+  string id = 1 [
+                  (google.api.field_behavior) = REQUIRED,
+                  (google.api.resource_reference).type = "Book"
+                  ];
+}
+
+// Request message for BookService.ListBooks.
+message ListBooksRequest {
+  // Requested page size. Server may return fewer than requested.
+  // If unspecified, server will pick an appropriate default.
+  int32 page_size = 1;
+
+  // A token identifying a page of results the server should return.
+  // Typically, this is the value of ListBooksResponse.next_page_token
+  // returned from the previous call to `ListBooks` method.
+  string page_token = 2;
+}
+
+// Response message for BookService.ListBooks.
+message ListBooksResponse {
+  // The list of books
+  repeated Book books = 1;
+
+  // A token to retrieve next page of results.
+  // Pass this value in the ListBooksRequest.page_token
+  // field in the subsequent call to `ListBooks` method to retrieve the next
+  // page of results.
+  string next_page_token = 2;
+}
+
+// Request message for BookService.DeleteBook
+message DeleteBookRequest {
+  // The id of the book to delete.
+  string id = 1 [
+                  (google.api.field_behavior) = REQUIRED,
+                  (google.api.resource_reference).type = "Book"
+                  ];
+}
+
+
+// Request message for BookService.UpdateBook.
+message UpdateBookRequest {
+  // The id of the book to update.
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The book to update with. The id must match or be empty.
+  Book book = 2 [(google.api.field_behavior) = REQUIRED];
+}

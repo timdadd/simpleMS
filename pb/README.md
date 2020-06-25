@@ -19,38 +19,34 @@ Check the latest [readme on github](https://pkg.go.dev/mod/google.golang.org/pro
 You need two things:
 This project is comprised of two components:
 
-* **Code generator**: The [`protoc-gen-go`](https://pkg.go.dev/google.golang.org/protobuf/cmd/protoc-gen-go) tool is a compiler plugin
- to `protoc`, the protocol buffer compiler. It augments the `protoc` compiler so that it knows [how to generate Go specific code for a
+* **Code generator**: The [`protoc-gen-go`](https://pkg.go.dev/google.golang.org/protobuf/cmd/protoc-gen-go) 
+tool is a compiler plugin to `protoc`, the protocol buffer compiler. It augments the `protoc` compiler so that
+it knows [how to generate Go specific code for a
  given `.proto` file.](https://developers.google.com/protocol-buffers/docs/reference/go-generated)
 
 * **Runtime library**: The [`protobuf`](https://pkg.go.dev/mod/google.golang.org/protobuf) module contains a set of Go packages that
 form the runtime implementation of protobufs in Go. This provides the set of interfaces that
-[define what a message is](https://pkg.go.dev/google.golang.org/protobuf/reflect/protoreflect) an[d fu](https://pkg.go.dev/google.golang.org/protobuf/proto)nctionality to serialize message
+[define what a message is](https://pkg.go.dev/google.golang.org/protobuf/reflect/protoreflect) 
+and functionality to [serialise a message](https://pkg.go.dev/google.golang.org/protobuf/proto)
 in various formats (e.g. [wire](https://pkg.go.dev/google.golang.org/protobuf/proto),
 [JSON](https://pkg.go.dev/google.golang.org/protobuf/encoding/protojson), and 
 [text](https://pkg.go.dev/google.golang.org/protobuf/encoding/prototext))).
 
 ## Installing the compiler
-The compiler reads the proto file and generates GO code.  Install the compiler as follows:
-THIS DIDN'T WORK
-```bash
-https://pkg.go.dev/google.golang.org/protobuf/encoding/prototext
-```
+The latest release of Protocol Buffers can be found on the [release page]
+(https://github.com/protocolbuffers/protobuf/releases/latest).  This gives you protoc but not the latest GoLang
+version of the plugin.
 
-From the [protobuf releases page](https://github.com/protocolbuffers/protobuf/releases) I downloaded the `protoc-x.y.z-linux-x86_64.zip`
-file. Then I copied protoc to `~/bin`. If you need to create this directory then login and logout to get it added to
-the PATH automatically.  You can also copy the content of the include folder to /usr/local/include.
+The script `genpb.sh` that needs to be called from the microservice directory should do all the steps
+for making protoc work
 
-Grab the protoc-gen-go plugin for the compiler:
+## Mocking
+Install mockgen to get mock files for testing the interface
 
-You need to do this from within a go project
-```bash
-go get -u  google.golang.org/protobuf/cmd/protoc-gen-go
-go install google.golang.org/protobuf/cmd/protoc-gen-go
-```
+## REST services
+The 'genpb.sh' script generates REST interface using protoc plugin from
+[grpc-ecosystem](https://github.com/grpc-ecosystem/grpc-gateway)
 
-The latest release of Protocol Buffers can be found on the [release page](https://github.com/protocolbuffers/protobuf/releases/latest
-)  This gives you protoc but not the latest GoLang version.
-
-Now have developed a script `genpb.sh` that needs to be run in the microservice directory and will do all the steps
-for making protobug work
+# Swagger implementation
+The 'genpb.sh' script should generate SWAGGER JSON  using protoc plugin from
+[grpc-ecosystem](https://github.com/grpc-ecosystem/grpc-gateway)

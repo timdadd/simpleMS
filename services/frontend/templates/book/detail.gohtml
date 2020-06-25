@@ -1,0 +1,51 @@
+{{ template "header" . }}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{$.platform.url}}">{{$.platform_name}}</a></li>
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/books">Books</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{$.book.Title}}</li>
+  </ol>
+</nav>
+
+{{with index $ "book"}}
+
+<div class="bookshelf-template">
+  <h1>{{.Title}} <small>{{.PublishedDate}}</small></h1>
+  <p class="lead">{{.Description}}</p>
+  <div class="col d-flex justify-content-center">
+    <div class="card text-center"  style="width: 18rem">
+      <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://placekitten.com/g/200/300{{end}}" class="card-img-top">
+      <div class="card-body">
+        <h5 class="card-title">By {{if .Author}}{{.Author}}{{else}}unknown{{end}}</h5>
+        <a href="/books/{{.Id}}/edit" class="btn btn-primary btn-sm">Edit book</a>
+        <button class="btn btn-danger btn-sm"  data-toggle="modal" data-target="#confirmDelete">Delete book</button>
+      </div>
+    </div>
+
+    <div class="modal fade" id="confirmDelete" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmDeleteLabel">{{$.book.Title}}"</h5>
+            <button type="button" class="cancel" data-dismiss="modal" aria-label="Cancel">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this book?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+            <form action="/books/{{.Id}}:delete" method="post">
+              <button class="btn btn-danger">Delete Book</button>
+            </form>
+          </div>
+        </div>
+      </div>
+  </div>
+
+</div>
+</div>
+{{ end }}
+{{ template "footer" . }}

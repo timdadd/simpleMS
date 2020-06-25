@@ -2,8 +2,10 @@ system:
   service_addr: http://systemservice:3550
   port:
 route-guide:
-  service_addr: http://route-guide:10000
+  service_addr: route-guide:10000
   server_host_override: x.test.youtube.com
+book:
+  service_addr: book:4000
 frontend:
   listen_addr:
   port: 8080

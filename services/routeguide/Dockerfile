@@ -9,7 +9,7 @@ WORKDIR /go/src/$PROJECT
 # restore dependencies
 #go mod tidy
 COPY . .
-RUN ls -la /
+#RUN ls -la /
 RUN go build -o /routeguide .
 
 FROM alpine AS release

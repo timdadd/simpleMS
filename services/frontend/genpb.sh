@@ -1,7 +1,5 @@
 #!/bin/bash -eu
 
-pb_file="routeguide"  ## Name of your .proto fie here
-
 RED=$(tput setaf 1)
 CYAN=$(tput setaf 6)
 if [ ! -d ../../services ]; then
@@ -15,4 +13,4 @@ if [ ! -d ./lib ]; then
   cp -r ../../lib .
 fi
 
-/bin/bash lib/scripts/genpb.sh $pb_file
+/bin/bash lib/scripts/genpb.sh "book" "v1"

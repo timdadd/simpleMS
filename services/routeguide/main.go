@@ -186,7 +186,7 @@ func serialize(point *pb.Point) string {
 
 func newServer() *routeGuideServer {
 	s := &routeGuideServer{routeNotes: make(map[string][]*pb.RouteNote)}
-	s.loadFeatures(common.AppConfig.GetStringKey("json_feature_file"))
+	s.loadFeatures(common.App.GetStringKey("json_feature_file"))
 	return s
 }
 

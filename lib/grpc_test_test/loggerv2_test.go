@@ -30,7 +30,6 @@ var severityName = []string{
 func TestLoggerV2Severity(t *testing.T) {
 	buffers := []*bytes.Buffer{new(bytes.Buffer), new(bytes.Buffer), new(bytes.Buffer)}
 	grpc_test.SetLoggerV2(grpc_test.NewLoggerV2(buffers[infoLog], buffers[warningLog], buffers[errorLog]))
-
 	grpc_test.Info(severityName[infoLog])
 	grpc_test.Warning(severityName[warningLog])
 	grpc_test.Error(severityName[errorLog])

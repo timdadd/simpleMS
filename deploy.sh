@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-#Tim Dadd: 06-06-2020: First version
+#Tim Dadd: 06-06-2020: Genesis
+# Subsequent versions managed with GIT VCS
 
 # check https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html#The-Set-Builtin for options
 # Exit immediately if error, unset varible usage is an error, if a pipe command fails then use output of previous
@@ -19,6 +20,7 @@ if [ ! -d $projd/services ];then
 fi
 
 source lib/scripts/env.sh
+source lib/scripts/go.sh
 
 show_help () {
     echo "Usage: $0 {local|docker|minikube|gke} [option...] {start|stop|dev|test|build|clean} [service names ...]" >&2
@@ -41,6 +43,7 @@ show_help () {
     echo "You can only specify service names for local & docker deployment"
 }
 
+# List of all the services
 SERVICES=($(ls $projd/services))
 
 # Parse the command line
@@ -136,7 +139,7 @@ echo "Services:" "${SERVICES[*]}"
 SERVICES_COUNT=0
 GO_SERVICES=""
 GO_SERVICE_COUNT=0
-GO111MODULE=on # Everything about this uses go modules
+GO111MODULE="on" # Everything about this uses go modules
 # Get the master library version, IFS = Internal Field Separator, versioning as per https://semver.org/
 libVer=$(grep -Po 'var VERSION = "\K.*(?=")' $projd/lib/version.go)
 IFS=".";libV=($libVer);IFS=""
@@ -212,38 +215,15 @@ do
       esac
       echo "${YELLOW}Cleaning up go.mod & running go test $WHITE"
       go mod tidy
+      go mod vendor
+
+      goFmt  ## Check the formatting of the proejct
+      goVet  ## Vet the source code is reasonably solid
 
       echo "${ORANGE}Running tests on $LIME_YELLOW$servicename$WHITE"
       go test ./... 2>&1
       echo $WHITE
 
-      # Collect all `.go` files and `gofmt` against them. If some need formatting - print them.
-      echo -n "${CYAN}Format check: "
-#      go fmt ./...
-      fmtErrors=$(find "$@" -type f -name \*.go | xargs gofmt -l 2>&1 || true)
-      if [ "${fmtErrors}" ]; then
-          for f in ${fmtErrors}; do
-            case "$f" in
-            *vendor/gopkg.in/yaml.v2/* | *lib/*)
-  #            echo "Ignore formatting of $e"
-              ;;
-            *)
-              echo -n "($f): "
-              go fmt $f
-            esac
-          done
-      fi
-      echo "${GREEN}ALL FORMATTED$WHITE"
-
-      # Run `go vet` against all targets. If problems are found - print them.
-      echo -n "${CYAN}Vetting..."
-      VetErrors=$(go vet ./... 2>&1 || true)
-      if [ "${VetErrors}" ]; then
-          echo "${RED}FAIL"
-          echo "${ERRS}${WHITE}"
-          exit 1
-      fi
-      echo "${GREEN}VETTED OK$WHITE"
       if [ "$deploy_mode" != "test" ]; then
         echo -n "${CYAN}Building $servicename: "
         # Disable C code, enable Go modules
@@ -256,7 +236,7 @@ do
   fi
 done
 echo "Found $SERVICES_COUNT services & $GO_SERVICE_COUNT GO services"
-IFS=" \t\n"
+IFS=""
 
 if [ "$deploy_mode" == "test" ]; then exit 0; fi
 
@@ -282,11 +262,43 @@ case "$deploy_to" in
           cmd="$cmd -vdebug"
         fi
         if [ $silent == 0 ]; then
+#          If we  use the tail option then the process never ends so make background
           cmd="$cmd --tail"
         fi
-        bash -c "$cmd"
+
+#        (shopt -s lastpipe
+        rm -f skaffold.log
+        eval $cmd > skaffold.log &
+        skaffoldResult=""
+        while [[ $skaffoldResult == "" ]]; do
+          sleep 1
+          #  Now read whatever is in the skaffold log and look for a reason to exit the loop
+          while read -s line; do
+#            echo $line
+            if [[ "$line" == *"Deployments stabilized"* ]]; then
+              skaffoldResult="Stable"
+              break
+            fi
+          done < skaffold.log
+        done
+#        echo "helo, hello, hello"
+#        exit 0
+#        echo "$cmd"
+#        (shopt -s lastpipe
+#        bash -c "$cmd &" | while read -r line;do
+#          echo $line
+#          if [[ "$line" == "Deployments stabilized*" ]]; then
+#            echo "found end"
+#            break
+#          fi
+#        done)
+#        Wait 4 seconds for each service being started
+#        sleep $(( 4 * GO_SERVICE_COUNT ))
+        kubectl get services
+        IFS=$' \n'  # 0x0A=/n, default: IFS=$' \t\n'
         ks=($(kubectl get services))
-        echo $ks
+#        IFS=,
+        echo ${ks[*]}
         ## Is the output in the right format?
         expected_fmt="NAME:TYPE:EXTERNAL-IP"
         actual_fmt="${ks[0]}:${ks[1]}:${ks[3]}"
@@ -307,7 +319,7 @@ case "$deploy_to" in
           # Up the service count?
           for s in "${GO_SERVICES[@]}"
           do
-            if [ "$s" == "$sk" ]; then
+            if [[ "$s" == "$sk" || "${s}service" == "$sk" ]]; then
               let OK_Count+=1
               for j in {0..5};
               do printf "${ks[0+j]}=${ks[i+j]},"; done
@@ -480,7 +492,6 @@ case "$deploy_to" in
         #WARNING: Your Pod address range (`--cluster-ipv4-cidr`) can accommodate at most 1008 node(s).
         IFS=$' \n'  # 0x0A=/n, default: IFS=$' \t\n'
         kc=($(gcloud container clusters list --filter="$ke_clusterName"))
-        IFS=""
         ## 8 Columns[0-7]: NAME:LOCATION:MASTER_VERSION:MASTER_IP:MACHINE_TYPE:NODE_VERSION:NUM_NODES:STATUS
         if [ $kc ]; then
           ## Is the output in the right format?
@@ -505,6 +516,7 @@ case "$deploy_to" in
         fi
         echo "$cmd"
         bash -c "$cmd"
+        IFS=$' \n'  # 0x0A=/n, default: IFS=$' \t\n'
         kn=($(kubectl get nodes))  ## Check all is well
         # Do we need to add a check here?
         echo $kn
